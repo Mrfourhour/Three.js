@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>three.js OBJ load</title>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0">
+    <style>
+        body {
+            font-family: Monospace;
+            background-color: #000;
+            color: #fff;
+            margin: 0px;
+            overflow: hidden;
+        }
+        #info {
+            color: #fff;
+            position: absolute;
+            top: 10px;
+            width: 100%;
+            text-align: center;
+            z-index: 100;
+            display:block;
+        }
+        #info a, .button { color: #f00; font-weight: bold; text-decoration: underline; cursor: pointer }
+    </style>
+</head>
+
+<body>
+<div id="info">
+    <a href="http://threejs.org" target="_blank" rel="noopener">three.js</a>
+</div>
+
+<script src="js/three.js"></script>
+<script src="js/OBJLoader.js"></script>
+<script src="js/OrbitControls.js"></script>
+
+<script>
+
+    var container;
+    var camera, scene, renderer;
+
+    init();
+    animate();
+
+    function init() {
+
+        container = document.createElement( 'div' );
+        document.body.appendChild( container );
+
+        //camera
+        camera = new THREE.PerspectiveCamera( 45, window.innerWidth / window.innerHeight, 1, 2000 );
+        camera.position.z = 250;
+
+        // scene
+        scene = new THREE.Scene();
+
+
+        //light
+        var pointLight = new THREE.PointLight( 0xffffff, 0.8 );
+        camera.add( pointLight );
+        scene.add( camera );
+
+
+        var manager = new THREE.LoadingManager();
+        manager.onProgress = function ( item, loaded, total ) {
+
+            console.log( item, loaded, total );
+
+        };
+
+        //onError
+        var onError = function ( xhr ) {
+        };
+
+        // onProgress
+        var onProgress = function ( xhr ) {
+            if ( xhr.lengthComputable ) {
+                var percentComplete = xhr.loaded / xhr.total * 100;
+                console.log( Math.round(percentComplete, 2) + '% downloaded' );
+            }
+        };
+
+        //load model
+        var loader = new THREE.OBJLoader( manager );
+        loader.load( 'obj/file.obj', function ( object ) {
+
+            object.traverse( function ( child ) {
+
+                if ( child instanceof THREE.Mesh ) {
+
+                    //to do
+                }
+
+            } );
+
+            object.position.x = 0;
+            object.position.y = -85;
+            object.position.z = 0;
+            object.scale.x =  object.scale.y =  object.scale.z = 0.001;
+            scene.add( object );
+
+        }, onProgress, onError );
+
+        renderer = new THREE.WebGLRenderer();
+        renderer.setPixelRatio( window.devicePixelRatio );
+        renderer.setSize( window.innerWidth, window.innerHeight );
+        renderer.setClearColor(0xffffff);
+        container.appendChild( renderer.domElement );
+
+    }
+
+    //animate
+    function animate() {
+
+        requestAnimationFrame( animate );
+        render();
+
+    }
+
+    //render
+    function render() {
+
+        camera.lookAt( scene.position );
+
+        renderer.render( scene, camera );
+
+    }
+
+    //camera control
+    var con =  new THREE.OrbitControls(camera);
+    con.addEventListener( 'change', render );
+
+
+</script>
+
+</body>
+</html>
